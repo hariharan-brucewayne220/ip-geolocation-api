@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Air Quality API Test</title>
+</head>
+<body>
+    <h1>Air Quality API Test</h1>
+    <div>
+        <input type="text" id="cityInput" placeholder="Enter city name">
+        <button onclick="testCity()">Test City</button>
+    </div>
+    <div>
+        <input type="text" id="zipInput" placeholder="Enter ZIP code">
+        <button onclick="testZip()">Test ZIP</button>
+    </div>
+    <div>
+        <button onclick="testMetrics()">Test Metrics</button>
+    </div>
+
+    <script>
+        async function testCity() {
+            const city = document.getElementById('cityInput').value;
+            try {
+                const response = await fetch(`/airquality?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+                console.log('City API Response:', data);
+            } catch (error) {
+                console.error('Error testing city API:', error);
+            }
+        }
+
+        async function testZip() {
+            const zip = document.getElementById('zipInput').value;
+            try {
+                const response = await fetch(`/airquality?zip=${encodeURIComponent(zip)}`);
+                const data = await response.json();
+                console.log('ZIP API Response:', data);
+            } catch (error) {
+                console.error('Error testing ZIP API:', error);
+            }
+        }
+
+        async function testMetrics() {
+            try {
+                const response = await fetch('/metrics');
+                const data = await response.json();
+                console.log('Metrics API Response:', data);
+            } catch (error) {
+                console.error('Error testing metrics API:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
