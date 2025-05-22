@@ -3,145 +3,662 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP Geolocation API Test</title>
+    <title>IP Geolocation API Interface</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 2em;
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .container {
-            background: #fff;
-            padding: 2em;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px #ccc;
-            max-width: 500px;
-            margin: auto;
-        }
-        h1 {
-            color: #333;
-        }
-        input, button {
-            padding: 0.5em;
-            font-size: 1em;
-            margin: 0.5em 0;
-        }
-        button {
-            cursor: pointer;
-        }
-        .geo-card {
+        .result-card {
             display: none;
-            margin-top: 1.5em;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #e0e0e0;
-            background: #f7fafc;
-            padding: 1.5em;
+            margin-top: 20px;
         }
-        .geo-label {
-            font-weight: 600;
-            color: #555;
+        .nav-tabs {
+            margin-bottom: 20px;
         }
-        .geo-value {
-            color: #222;
+        .form-group {
+            margin-bottom: 15px;
         }
         .error-message {
             color: #b30000;
             margin-top: 1em;
             display: none;
         }
-        pre {
-            background: #f0f0f0;
-            padding: 1em;
-            border-radius: 6px;
-            margin-top: 1.5em;
+        .postcard {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .postcard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+        }
+        .postcard-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #eee;
+        }
+        .postcard-title {
+            color: #333;
+            font-size: 24px;
+            margin: 0;
+        }
+        .postcard-subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .postcard-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .postcard-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .postcard-icon {
+            width: 40px;
+            height: 40px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2196F3;
+        }
+        .postcard-info {
+            flex: 1;
+        }
+        .postcard-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        .postcard-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .postcard-footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px dashed #eee;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>IP Geolocation API Test</h1>
-        <label for="ipInput">Enter IP address:</label><br>
-        <input type="text" id="ipInput" placeholder="e.g. 8.8.8.8">
-        <button class="btn btn-primary" onclick="testGeolocate()">Lookup IP</button>
-        <button class="btn btn-secondary ms-2" onclick="testMetrics()">Show Cache Metrics</button>
-        <div class="error-message" id="errorMessage"></div>
-        <div class="geo-card" id="geoCard">
-            <h5 class="mb-3">Geolocation Details</h5>
-            <div><span class="geo-label">IP:</span> <span class="geo-value" id="geoIp"></span></div>
-            <div><span class="geo-label">City:</span> <span class="geo-value" id="geoCity"></span></div>
-            <div><span class="geo-label">Region:</span> <span class="geo-value" id="geoRegion"></span></div>
-            <div><span class="geo-label">Country:</span> <span class="geo-value" id="geoCountry"></span></div>
-            <div><span class="geo-label">Timezone:</span> <span class="geo-value" id="geoTimezone"></span></div>
-            <div><span class="geo-label">Org:</span> <span class="geo-value" id="geoOrg"></span></div>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">IP Geolocation API Interface</h1>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="lookup-tab" data-bs-toggle="tab" data-bs-target="#lookup" type="button">Lookup IP</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button">Add IP</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="update-tab" data-bs-toggle="tab" data-bs-target="#update" type="button">Update IP</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button">Delete IP</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="metrics-tab" data-bs-toggle="tab" data-bs-target="#metrics" type="button">Cache Metrics</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Lookup IP Tab -->
+            <div class="tab-pane fade show active" id="lookup" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Lookup IP Address</h5>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="lookupIp" placeholder="Enter IP address">
+                        </div>
+                        <button class="btn btn-primary" onclick="lookupIp()">Lookup</button>
+                    </div>
+                </div>
+                <div class="error-message" id="lookupError"></div>
+                <div class="result-card" id="lookupResult">
+                    <div class="postcard">
+                        <div class="status-badge status-success">Status: 200</div>
+                        <div class="postcard-header">
+                            <h3 class="postcard-title">IP Geolocation Details</h3>
+                            <div class="postcard-subtitle" id="lookupIpAddress"></div>
+                        </div>
+                        <div class="postcard-content">
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-city"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">City</div>
+                                    <div class="postcard-value" id="lookupCity"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Region</div>
+                                    <div class="postcard-value" id="lookupRegion"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-globe-americas"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Country</div>
+                                    <div class="postcard-value" id="lookupCountry"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Timezone</div>
+                                    <div class="postcard-value" id="lookupTimezone"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Organization</div>
+                                    <div class="postcard-value" id="lookupOrg"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="postcard-footer">
+                            <i class="fas fa-info-circle"></i> Data provided by IP Geolocation API
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add IP Tab -->
+            <div class="tab-pane fade" id="add" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Add New IP Data</h5>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addIp" placeholder="IP Address">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addCity" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addRegion" placeholder="Region">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addCountry" placeholder="Country">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addTimezone" placeholder="Timezone">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addOrg" placeholder="Organization">
+                        </div>
+                        <button class="btn btn-success" onclick="addIp()">Add IP</button>
+                    </div>
+                </div>
+                <div class="error-message" id="addError"></div>
+                <div class="result-card" id="addResult">
+                    <div class="postcard">
+                        <div class="status-badge status-success">Status: 201</div>
+                        <div class="postcard-header">
+                            <h3 class="postcard-title">Added IP Details</h3>
+                            <div class="postcard-subtitle" id="addResultIp"></div>
+                        </div>
+                        <div class="postcard-content">
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-city"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">City</div>
+                                    <div class="postcard-value" id="addResultCity"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Region</div>
+                                    <div class="postcard-value" id="addResultRegion"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-globe-americas"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Country</div>
+                                    <div class="postcard-value" id="addResultCountry"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Timezone</div>
+                                    <div class="postcard-value" id="addResultTimezone"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Organization</div>
+                                    <div class="postcard-value" id="addResultOrg"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="postcard-footer">
+                            <i class="fas fa-check-circle"></i> IP data successfully added
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update IP Tab -->
+            <div class="tab-pane fade" id="update" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Update IP Data</h5>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="updateIp" placeholder="IP Address">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="updateCity" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="updateRegion" placeholder="Region">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="updateCountry" placeholder="Country">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="updateTimezone" placeholder="Timezone">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="updateOrg" placeholder="Organization">
+                        </div>
+                        <button class="btn btn-warning" onclick="updateIp()">Update IP</button>
+                    </div>
+                </div>
+                <div class="error-message" id="updateError"></div>
+                <div class="result-card" id="updateResult">
+                    <div class="postcard">
+                        <div class="status-badge status-success">Status: 200</div>
+                        <div class="postcard-header">
+                            <h3 class="postcard-title">Updated IP Details</h3>
+                            <div class="postcard-subtitle" id="updateResultIp"></div>
+                        </div>
+                        <div class="postcard-content">
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-city"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">City</div>
+                                    <div class="postcard-value" id="updateResultCity"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Region</div>
+                                    <div class="postcard-value" id="updateResultRegion"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-globe-americas"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Country</div>
+                                    <div class="postcard-value" id="updateResultCountry"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Timezone</div>
+                                    <div class="postcard-value" id="updateResultTimezone"></div>
+                                </div>
+                            </div>
+                            <div class="postcard-item">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Organization</div>
+                                    <div class="postcard-value" id="updateResultOrg"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="postcard-footer">
+                            <i class="fas fa-sync-alt"></i> IP data successfully updated
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete IP Tab -->
+            <div class="tab-pane fade" id="delete" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Delete IP Data</h5>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="deleteIp" placeholder="Enter IP address to delete">
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteIp()">Delete</button>
+                    </div>
+                </div>
+                <div class="error-message" id="deleteError"></div>
+                <div class="result-card" id="deleteResult">
+                    <div class="postcard">
+                        <div class="status-badge status-success">Status: 200</div>
+                        <div class="postcard-header">
+                            <h3 class="postcard-title">Delete Result</h3>
+                            <div class="postcard-subtitle" id="deleteResultIp"></div>
+                        </div>
+                        <div class="postcard-content">
+                            <div class="postcard-item" style="grid-column: 1 / -1;">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-trash-alt"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Message</div>
+                                    <div class="postcard-value" id="deleteResultMessage"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="postcard-footer">
+                            <i class="fas fa-check-circle"></i> Operation completed
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Tab -->
+            <div class="tab-pane fade" id="metrics" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Cache Metrics</h5>
+                        <button class="btn btn-info" onclick="getMetrics()">Get Metrics</button>
+                    </div>
+                </div>
+                <div class="error-message" id="metricsError"></div>
+                <div class="result-card" id="metricsResult">
+                    <div class="postcard">
+                        <div class="status-badge status-success">Status: 200</div>
+                        <div class="postcard-header">
+                            <h3 class="postcard-title">Cache Metrics</h3>
+                            <div class="postcard-subtitle">Current Cache Status</div>
+                        </div>
+                        <div class="postcard-content">
+                            <div class="postcard-item" style="grid-column: 1 / -1;">
+                                <div class="postcard-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="postcard-info">
+                                    <div class="postcard-label">Cache Keys</div>
+                                    <div class="postcard-value" id="metricsResultContent"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="postcard-footer">
+                            <i class="fas fa-info-circle"></i> Cache metrics information
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <pre id="metricsResult" style="display:none;"></pre>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function clearGeoCard() {
-            document.getElementById('geoIp').textContent = '';
-            document.getElementById('geoCity').textContent = '';
-            document.getElementById('geoRegion').textContent = '';
-            document.getElementById('geoCountry').textContent = '';
-            document.getElementById('geoTimezone').textContent = '';
-            document.getElementById('geoOrg').textContent = '';
-        }
+        const API_BASE_URL = 'http://localhost:8000';
 
         function getField(val) {
             if (Array.isArray(val)) return val[0] || '-';
             return val || '-';
         }
 
-        async function testGeolocate() {
-            const ip = document.getElementById('ipInput').value.trim();
-            const geoCard = document.getElementById('geoCard');
-            const errorMessage = document.getElementById('errorMessage');
-            const metricsResult = document.getElementById('metricsResult');
-            metricsResult.style.display = 'none';
-            geoCard.style.display = 'none';
-            errorMessage.style.display = 'none';
-            clearGeoCard();
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+
+        function showResult(elementId) {
+            const resultCard = document.getElementById(elementId);
+            resultCard.style.display = 'block';
+        }
+
+        function hideResult(elementId) {
+            const resultCard = document.getElementById(elementId);
+            resultCard.style.display = 'none';
+        }
+
+        async function lookupIp() {
+            const ip = document.getElementById('lookupIp').value;
+            hideError('lookupError');
+            hideResult('lookupResult');
+
             if (!ip) {
-                errorMessage.textContent = 'Please enter an IP address.';
-                errorMessage.style.display = 'block';
+                showError('lookupError', 'Please enter an IP address.');
                 return;
             }
-            const url = `http://localhost:8000/geolocate?ip=${encodeURIComponent(ip)}`;
+
             try {
-                const response = await fetch(url);
+                const response = await fetch(`${API_BASE_URL}/geolocate?ip=${ip}`);
                 const data = await response.json();
-                console.log(data.status);
+                
                 if (data.status[0] === 200 && data.data) {
-                    document.getElementById('geoIp').textContent = getField(data.data.ip);
-                    document.getElementById('geoCity').textContent = getField(data.data.city);
-                    document.getElementById('geoRegion').textContent = getField(data.data.region);
-                    document.getElementById('geoCountry').textContent = getField(data.data.country);
-                    document.getElementById('geoTimezone').textContent = getField(data.data.timezone);
-                    document.getElementById('geoOrg').textContent = getField(data.data.org);
-                    geoCard.style.display = 'block';
+                    document.getElementById('lookupIpAddress').textContent = getField(data.data.ip);
+                    document.getElementById('lookupCity').textContent = getField(data.data.city);
+                    document.getElementById('lookupRegion').textContent = getField(data.data.region);
+                    document.getElementById('lookupCountry').textContent = getField(data.data.country);
+                    document.getElementById('lookupTimezone').textContent = getField(data.data.timezone);
+                    document.getElementById('lookupOrg').textContent = getField(data.data.org);
+                    showResult('lookupResult');
                 } else {
-                    errorMessage.textContent = data.message || 'No data found for the given IP.';
-                    errorMessage.style.display = 'block';
+                    showError('lookupError', data.message || 'No data found for the given IP.');
                 }
             } catch (error) {
-                errorMessage.textContent = 'Error: ' + error;
-                errorMessage.style.display = 'block';
+                showError('lookupError', 'Error: ' + error.message);
             }
         }
 
-        async function testMetrics() {
-            const geoCard = document.getElementById('geoCard');
-            const errorMessage = document.getElementById('errorMessage');
-            const metricsResult = document.getElementById('metricsResult');
-            geoCard.style.display = 'none';
-            errorMessage.style.display = 'none';
-            metricsResult.style.display = 'block';
+        async function addIp() {
+            const data = {
+                ip: document.getElementById('addIp').value,
+                city: document.getElementById('addCity').value,
+                region: document.getElementById('addRegion').value,
+                country: document.getElementById('addCountry').value,
+                timezone: document.getElementById('addTimezone').value,
+                org: document.getElementById('addOrg').value
+            };
+
+            hideError('addError');
+            hideResult('addResult');
+
+            if (!data.ip) {
+                showError('addError', 'IP address is required.');
+                return;
+            }
+
             try {
-                const response = await fetch('http://localhost:8000/metrics');
-                const data = await response.json();
-                metricsResult.textContent = JSON.stringify(data, null, 2);
+                const response = await fetch(`${API_BASE_URL}/geolocate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                if (result.status[0] === 201) {
+                    document.getElementById('addResultIp').textContent = getField(data.ip);
+                    document.getElementById('addResultCity').textContent = getField(data.city);
+                    document.getElementById('addResultRegion').textContent = getField(data.region);
+                    document.getElementById('addResultCountry').textContent = getField(data.country);
+                    document.getElementById('addResultTimezone').textContent = getField(data.timezone);
+                    document.getElementById('addResultOrg').textContent = getField(data.org);
+                    showResult('addResult');
+                } else {
+                    showError('addError', result.message || 'Failed to add IP data.');
+                }
             } catch (error) {
-                metricsResult.textContent = 'Error: ' + error;
+                showError('addError', 'Error: ' + error.message);
+            }
+        }
+
+        async function updateIp() {
+            const data = {
+                ip: document.getElementById('updateIp').value,
+                city: document.getElementById('updateCity').value,
+                region: document.getElementById('updateRegion').value,
+                country: document.getElementById('updateCountry').value,
+                timezone: document.getElementById('updateTimezone').value,
+                org: document.getElementById('updateOrg').value
+            };
+
+            hideError('updateError');
+            hideResult('updateResult');
+
+            if (!data.ip) {
+                showError('updateError', 'IP address is required.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/geolocate`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                if (result.status[0] === 200) {
+                    document.getElementById('updateResultIp').textContent = getField(data.ip);
+                    document.getElementById('updateResultCity').textContent = getField(data.city);
+                    document.getElementById('updateResultRegion').textContent = getField(data.region);
+                    document.getElementById('updateResultCountry').textContent = getField(data.country);
+                    document.getElementById('updateResultTimezone').textContent = getField(data.timezone);
+                    document.getElementById('updateResultOrg').textContent = getField(data.org);
+                    showResult('updateResult');
+                } else {
+                    showError('updateError', result.message || 'Failed to update IP data.');
+                }
+            } catch (error) {
+                showError('updateError', 'Error: ' + error.message);
+            }
+        }
+
+        async function deleteIp() {
+            const ip = document.getElementById('deleteIp').value;
+            hideError('deleteError');
+            hideResult('deleteResult');
+
+            if (!ip) {
+                showError('deleteError', 'IP address is required.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/geolocate?ip=${ip}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.status[0] === 200) {
+                    document.getElementById('deleteResultIp').textContent = ip;
+                    document.getElementById('deleteResultMessage').textContent = data.message;
+                    showResult('deleteResult');
+                } else {
+                    showError('deleteError', data.message || 'Failed to delete IP data.');
+                }
+            } catch (error) {
+                showError('deleteError', 'Error: ' + error.message);
+            }
+        }
+
+        async function getMetrics() {
+            hideError('metricsError');
+            hideResult('metricsResult');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/metrics`);
+                const data = await response.json();
+                
+                if (data.status[0] === 200) {
+                    document.getElementById('metricsResultContent').textContent = 
+                        Array.isArray(data.cache_keys) ? data.cache_keys.join(', ') : 'No cache keys';
+                    showResult('metricsResult');
+                } else {
+                    showError('metricsError', data.message || 'Failed to get metrics.');
+                }
+            } catch (error) {
+                showError('metricsError', 'Error: ' + error.message);
             }
         }
     </script>

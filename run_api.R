@@ -1,20 +1,18 @@
-# Load required packages
-library(plumber)
-
 # Print startup message
-message("Starting IP Geolocation API...")
+cat("Starting IP Geolocation API...\n")
 
-# Set working directory if needed
-setwd("H:/nextproject")
-
-# Create plumber object
-pr <- plumber::plumb('app.R')
-pr$setDebug(TRUE)  # Enable debug mode
-
-# Print server start message
-message("API server starting on http://localhost:8000")
-message("Swagger docs at http://localhost:8000/__docs__ or /__swagger__")
-message("Press Ctrl+C to stop the server")
-
-# Start the API
-pr$run(port=8000) 
+# Create and run the Plumber API
+tryCatch({
+  # Create the Plumber router
+  pr <- plumber::plumb("api.R")
+  
+  # Run the API
+  pr$run(port = 8000, host = "0.0.0.0")
+}, error = function(e) {
+  cat("Error starting API:", e$message, "\n")
+  # Close database connection if it exists
+  if (exists("db")) {
+    try(close_db(db))
+  }
+  quit(status = 1)
+}) 
